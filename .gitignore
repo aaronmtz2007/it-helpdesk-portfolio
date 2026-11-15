@@ -1,0 +1,7 @@
+.env
+*.iso
+*.vdi
+*.vmdk
+*.ova
+*.log
+Thumbs.db
