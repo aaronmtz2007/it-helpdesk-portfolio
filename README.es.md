@@ -9,6 +9,7 @@ Laboratorios prácticos de soporte técnico. Todos los datos (usuarios, tickets,
 | # | Proyecto | Stack | Estado | Evidencia |
 |---|---|---|---|---|
 | 1 | [Laboratorio de Active Directory](01-active-directory-lab/) | Windows Server 2022, Windows 11, DNS, DHCP, GPO, PowerShell | 🟡 Casi listo | [capturas](01-active-directory-lab/evidence/) · video pendiente |
+| 2 | [Mesa de ayuda con osTicket](02-osticket-helpdesk/) | osTicket, Docker, MariaDB | 🟡 Casi listo | [capturas](02-osticket-helpdesk/evidence/) · video pendiente |
 
 ## Sobre mí
 1+ año como único recurso de TI en una empresa de HVAC y servicios marítimos: soporte Windows, cuentas y accesos, Google Workspace, soporte remoto con AnyDesk, redes e impresoras. Español nativo, inglés fluido.

@@ -9,6 +9,7 @@ Hands-on tech support labs. All the data (users, tickets, companies) is **fictio
 | # | Project | Stack | Status | Evidence |
 |---|---|---|---|---|
 | 1 | [Active Directory lab](01-active-directory-lab/) | Windows Server 2022, Windows 11, DNS, DHCP, GPO, PowerShell | 🟡 Almost done | [screenshots](01-active-directory-lab/evidence/) · video pending |
+| 2 | [Help desk with osTicket](02-osticket-helpdesk/) | osTicket, Docker, MariaDB | 🟡 Almost done | [screenshots](02-osticket-helpdesk/evidence/) · video pending |
 
 ## About me
 1+ year as the only IT person at an HVAC and marine services company: Windows support, accounts and access, Google Workspace, remote support with AnyDesk, networks and printers. Native Spanish, fluent English.
