@@ -29,36 +29,7 @@ INSERT INTO purchase_orders (customer_id, po_number, material, price_per_ton) VA
  (4, 'PO-24-0104', 'Plastics',     160.00),
  (5, 'PO-24-0105', 'Cardboard',    110.00);
 
--- 60 loads over the last three weeks. The drivers get slightly different
--- speeds and fuel use on purpose, so the comparison dashboard has something to show.
-SELECT setseed(0.42);
-
-INSERT INTO load_tickets
-    (ticket_no, driver_id, truck_id, po_id, gross_lb, tare_lb, departed_at, arrived_at, miles, fuel_gal)
-SELECT
-    'LT-' || lpad(i::text, 5, '0'),
-    d, t, po,
-    tare + net,
-    tare,
-    dep,
-    dep + (miles / speed) * interval '1 hour',
-    miles,
-    ROUND((miles / mpg)::numeric, 1)
-FROM (
-    SELECT
-        i,
-        ((i - 1) % 6) + 1 AS d,
-        ((i - 1) % 5) + 1 AS t,
-        ((i - 1) % 5) + 1 AS po,
-        28000 + (((i - 1) % 5) + 1) * 500 AS tare,
-        30000 + (random() * 14000)::int   AS net,
-        date_trunc('day', now()) - (((60 - i) / 3) * interval '1 day')
-            + ((6 + (i % 3) * 3) * interval '1 hour')                  AS dep,
-        ROUND((40 + random() * 120)::numeric, 1)                         AS miles,
-        (36 + (((i - 1) % 6) + 1) * 2 + random() * 4)                    AS speed,
-        (5.2 + ((((i - 1) % 6) + 1) % 3) * 0.5 + random() * 0.6)         AS mpg
-    FROM generate_series(1, 60) AS i
-) x;
+-- The load tickets are generated in 04-load-history.sql.
 
 -- Ten invoices. The four newest are still waiting to be entered in the portal.
 INSERT INTO invoices (invoice_no, po_id, issue_date, amount, status, entered_at)
