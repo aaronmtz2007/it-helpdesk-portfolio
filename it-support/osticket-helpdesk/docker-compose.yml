@@ -1,3 +1,5 @@
+name: 02-osticket-helpdesk
+
 # osTicket + MariaDB for the help desk lab.
 # Usage:  copy .env.example .env   (set your own values)  ->  docker compose up -d
 # The image installs osTicket by itself on first start using the variables below,
