@@ -1,0 +1,199 @@
+[{
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "timezone":  "America/New_York"
+                 },
+    "name":  "02 Daily invoice reminder",
+    "connections":  {
+                        "Any pending?":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Email the reminder",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ],
+                                                          [
+
+                                                          ]
+                                                      ]
+                                         },
+                        "Run now (demo)":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Pending invoices",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Build the message":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Any pending?",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Pending invoices":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Build the message",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Every weekday 9:30 AM ET":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "Pending invoices",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     }
+                    },
+    "nodes":  [
+                  {
+                      "id":  "m1",
+                      "name":  "Every weekday 9:30 AM ET",
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "expression":  "30 9 * * 1-5",
+                                                                           "field":  "cronExpression"
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "position":  [
+                                       0,
+                                       -100
+                                   ],
+                      "typeVersion":  1.2
+                  },
+                  {
+                      "id":  "m2",
+                      "name":  "Run now (demo)",
+                      "parameters":  {
+
+                                     },
+                      "type":  "n8n-nodes-base.manualTrigger",
+                      "position":  [
+                                       0,
+                                       100
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "alwaysOutputData":  true,
+                      "id":  "m3",
+                      "name":  "Pending invoices",
+                      "type":  "n8n-nodes-base.postgres",
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "opspg",
+                                                           "name":  "Ops database"
+                                                       }
+                                      },
+                      "typeVersion":  2.5,
+                      "parameters":  {
+                                         "query":  "SELECT invoice_no, customer, po_number, issue_date, amount FROM v_pending_invoices ORDER BY issue_date;",
+                                         "operation":  "executeQuery",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "position":  [
+                                       280,
+                                       0
+                                   ]
+                  },
+                  {
+                      "id":  "m4",
+                      "name":  "Build the message",
+                      "parameters":  {
+                                         "jsCode":  "const rows = $input.all().map(i =\u003e i.json);\nconst total = rows.reduce((s, r) =\u003e s + Number(r.amount), 0);\nconst money = (n) =\u003e \u0027$\u0027 + Number(n).toLocaleString(\u0027en-US\u0027, { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst lines = rows.map(r =\u003e\n  `\u003ctr\u003e\u003ctd\u003e${r.invoice_no}\u003c/td\u003e\u003ctd\u003e${r.customer}\u003c/td\u003e\u003ctd\u003e${r.po_number}\u003c/td\u003e\u003ctd style=\"text-align:right\"\u003e${money(r.amount)}\u003c/td\u003e\u003c/tr\u003e`\n).join(\u0027\u0027);\nconst html = `\u003cp\u003eGood morning,\u003c/p\u003e\n\u003cp\u003eThese invoices are still waiting to be entered in the factoring portal. The cutoff is \u003cb\u003e10:00 AM ET\u003c/b\u003e, so they get paid today.\u003c/p\u003e\n\u003ctable border=\"1\" cellpadding=\"6\" cellspacing=\"0\"\u003e\n\u003ctr\u003e\u003cth\u003eInvoice\u003c/th\u003e\u003cth\u003eCustomer\u003c/th\u003e\u003cth\u003ePO\u003c/th\u003e\u003cth\u003eAmount\u003c/th\u003e\u003c/tr\u003e${lines}\n\u003ctr\u003e\u003ctd colspan=\"3\"\u003e\u003cb\u003eTotal\u003c/b\u003e\u003c/td\u003e\u003ctd style=\"text-align:right\"\u003e\u003cb\u003e${money(total)}\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\n\u003c/table\u003e`;\nreturn [{ json: { count: rows.length, total, subject: `${rows.length} invoice(s) to enter before 10:00 AM ET (${money(total)})`, html } }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       560,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "m5",
+                      "name":  "Any pending?",
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "typeValidation":  "strict",
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  true
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "operator":  {
+                                                                                                    "operation":  "gt",
+                                                                                                    "type":  "number"
+                                                                                                },
+                                                                                   "rightValue":  0,
+                                                                                   "id":  "c1",
+                                                                                   "leftValue":  "={{ $json.count }}"
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "position":  [
+                                       820,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "m6",
+                      "name":  "Email the reminder",
+                      "credentials":  {
+                                          "smtp":  {
+                                                       "id":  "opssmtp",
+                                                       "name":  "Mailpit"
+                                                   }
+                                      },
+                      "parameters":  {
+                                         "html":  "={{ $json.html }}",
+                                         "fromEmail":  "automation@recycling-lab.example",
+                                         "subject":  "={{ $json.subject }}",
+                                         "emailFormat":  "html",
+                                         "options":  {
+
+                                                     },
+                                         "toEmail":  "operations@recycling-lab.example"
+                                     },
+                      "type":  "n8n-nodes-base.emailSend",
+                      "position":  [
+                                       1080,
+                                       -60
+                                   ],
+                      "typeVersion":  2.1
+                  }
+              ]
+}]

@@ -1,0 +1,176 @@
+[{
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "timezone":  "America/New_York"
+                 },
+    "name":  "06 Mark invoice as entered",
+    "connections":  {
+                        "Found it?":  {
+                                          "main":  [
+                                                       [
+                                                           {
+                                                               "node":  "Marked",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ],
+                                                       [
+                                                           {
+                                                               "node":  "Not found",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ]
+                                                   ]
+                                      },
+                        "Mark as entered":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Found it?",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Entered form":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Mark as entered",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         }
+                    },
+    "nodes":  [
+                  {
+                      "id":  "e1",
+                      "name":  "Entered form",
+                      "parameters":  {
+                                         "formFields":  {
+                                                            "values":  [
+                                                                           {
+                                                                               "fieldType":  "text",
+                                                                               "fieldLabel":  "Invoice number",
+                                                                               "requiredField":  true,
+                                                                               "placeholder":  "INV-1001"
+                                                                           }
+                                                                       ]
+                                                        },
+                                         "formDescription":  "Type the invoice number after you enter it in the factoring portal (for example INV-1001).",
+                                         "path":  "invoice-entered",
+                                         "responseMode":  "lastNode",
+                                         "formTitle":  "Invoice entered in the portal",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "webhookId":  "invoice-entered-form",
+                      "type":  "n8n-nodes-base.formTrigger",
+                      "position":  [
+                                       0,
+                                       0
+                                   ],
+                      "typeVersion":  2.3
+                  },
+                  {
+                      "alwaysOutputData":  true,
+                      "id":  "e2",
+                      "name":  "Mark as entered",
+                      "type":  "n8n-nodes-base.postgres",
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "opspg",
+                                                           "name":  "Ops database"
+                                                       }
+                                      },
+                      "typeVersion":  2.5,
+                      "parameters":  {
+                                         "query":  "UPDATE invoices SET status = \u0027entered\u0027, entered_at = now() WHERE invoice_no = upper(trim($1::text)) AND status = \u0027pending\u0027 RETURNING invoice_no, amount;",
+                                         "operation":  "executeQuery",
+                                         "options":  {
+                                                         "queryReplacement":  "={{ [$json[\"Invoice number\"]] }}"
+                                                     }
+                                     },
+                      "position":  [
+                                       300,
+                                       0
+                                   ]
+                  },
+                  {
+                      "id":  "e3",
+                      "name":  "Found it?",
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "typeValidation":  "loose",
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  true
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "operator":  {
+                                                                                                    "operation":  "notEmpty",
+                                                                                                    "singleValue":  true,
+                                                                                                    "type":  "string"
+                                                                                                },
+                                                                                   "rightValue":  "",
+                                                                                   "id":  "c1",
+                                                                                   "leftValue":  "={{ $json.invoice_no }}"
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "position":  [
+                                       580,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "e4",
+                      "name":  "Marked",
+                      "parameters":  {
+                                         "operation":  "completion",
+                                         "completionMessage":  "={{ $json.invoice_no + \" is marked as entered in the portal.\" }}",
+                                         "options":  {
+
+                                                     },
+                                         "completionTitle":  "Done"
+                                     },
+                      "type":  "n8n-nodes-base.form",
+                      "position":  [
+                                       860,
+                                       -100
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "e5",
+                      "name":  "Not found",
+                      "parameters":  {
+                                         "operation":  "completion",
+                                         "completionMessage":  "That invoice number does not exist or it was already marked as entered.",
+                                         "options":  {
+
+                                                     },
+                                         "completionTitle":  "Invoice not found"
+                                     },
+                      "type":  "n8n-nodes-base.form",
+                      "position":  [
+                                       860,
+                                       100
+                                   ],
+                      "typeVersion":  1
+                  }
+              ]
+}]
