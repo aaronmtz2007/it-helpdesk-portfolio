@@ -1,0 +1,344 @@
+[{
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "timezone":  "America/New_York"
+                 },
+    "name":  "01 Load ticket intake",
+    "connections":  {
+                        "Validate and prepare":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Is valid?",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Save ticket":  {
+                                            "main":  [
+                                                         [
+                                                             {
+                                                                 "node":  "Get metrics",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ]
+                                                     ]
+                                        },
+                        "Is valid?":  {
+                                          "main":  [
+                                                       [
+                                                           {
+                                                               "node":  "Save ticket",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ],
+                                                       [
+                                                           {
+                                                               "node":  "Show error",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ]
+                                                   ]
+                                      },
+                        "Get metrics":  {
+                                            "main":  [
+                                                         [
+                                                             {
+                                                                 "node":  "Done",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ]
+                                                     ]
+                                        },
+                        "Load ticket form":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Validate and prepare",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             }
+                    },
+    "nodes":  [
+                  {
+                      "id":  "n1",
+                      "name":  "Load ticket form",
+                      "parameters":  {
+                                         "responseMode":  "lastNode",
+                                         "formDescription":  "Enter the data from the scale ticket. Times are in Eastern Time, 24-hour format (for example 06:30).",
+                                         "path":  "load-ticket",
+                                         "formFields":  {
+                                                            "values":  [
+                                                                           {
+                                                                               "fieldType":  "dropdown",
+                                                                               "fieldLabel":  "Driver",
+                                                                               "requiredField":  true,
+                                                                               "fieldOptions":  {
+                                                                                                    "values":  [
+                                                                                                                   {
+                                                                                                                       "option":  "Marcus Reed"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Ana Torres"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Luis Ortega"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Dale Hughes"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Rosa Medina"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Tom Bennett"
+                                                                                                                   }
+                                                                                                               ]
+                                                                                                }
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "dropdown",
+                                                                               "fieldLabel":  "Truck",
+                                                                               "requiredField":  true,
+                                                                               "fieldOptions":  {
+                                                                                                    "values":  [
+                                                                                                                   {
+                                                                                                                       "option":  "T-101"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "T-102"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "T-103"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "T-201"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "T-202"
+                                                                                                                   }
+                                                                                                               ]
+                                                                                                }
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "dropdown",
+                                                                               "fieldLabel":  "PO number",
+                                                                               "requiredField":  true,
+                                                                               "fieldOptions":  {
+                                                                                                    "values":  [
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0101"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0102"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0103"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0104"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0105"
+                                                                                                                   }
+                                                                                                               ]
+                                                                                                }
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "date",
+                                                                               "fieldLabel":  "Date",
+                                                                               "requiredField":  true
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "text",
+                                                                               "fieldLabel":  "Departure time",
+                                                                               "requiredField":  true,
+                                                                               "placeholder":  "06:30"
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "text",
+                                                                               "fieldLabel":  "Arrival time",
+                                                                               "requiredField":  true,
+                                                                               "placeholder":  "09:10"
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "number",
+                                                                               "fieldLabel":  "Gross weight (lb)",
+                                                                               "requiredField":  true
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "number",
+                                                                               "fieldLabel":  "Tare weight (lb)",
+                                                                               "requiredField":  true
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "number",
+                                                                               "fieldLabel":  "Miles",
+                                                                               "requiredField":  true
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "number",
+                                                                               "fieldLabel":  "Fuel (gal)",
+                                                                               "requiredField":  true
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "textarea",
+                                                                               "fieldLabel":  "Notes",
+                                                                               "requiredField":  false
+                                                                           }
+                                                                       ]
+                                                        },
+                                         "formTitle":  "New load ticket",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "webhookId":  "load-ticket-form",
+                      "type":  "n8n-nodes-base.formTrigger",
+                      "position":  [
+                                       0,
+                                       0
+                                   ],
+                      "typeVersion":  2.3
+                  },
+                  {
+                      "id":  "n2",
+                      "name":  "Validate and prepare",
+                      "parameters":  {
+                                         "jsCode":  "const f = $input.first().json;\nconst fail = (m) =\u003e [{ json: { ok: false, error: m } }];\nconst timeRe = /^([01]?\\d|2[0-3]):[0-5]\\d$/;\nconst pad = (t) =\u003e (t.length === 4 ? \u00270\u0027 + t : t);\n\nconst dep = String(f[\u0027Departure time\u0027] || \u0027\u0027).trim();\nconst arr = String(f[\u0027Arrival time\u0027] || \u0027\u0027).trim();\nif (!timeRe.test(dep) || !timeRe.test(arr)) return fail(\u0027Use the 24-hour format HH:MM for the times, for example 06:30.\u0027);\nif (pad(arr) \u003c= pad(dep)) return fail(\u0027The arrival time must be after the departure time.\u0027);\n\nconst gross = Number(f[\u0027Gross weight (lb)\u0027]);\nconst tare = Number(f[\u0027Tare weight (lb)\u0027]);\nconst miles = Number(f[\u0027Miles\u0027]);\nconst fuel = Number(f[\u0027Fuel (gal)\u0027]);\nif (!(gross \u003e tare)) return fail(\u0027The gross weight must be higher than the tare weight.\u0027);\nif (!(miles \u003e 0) || !(fuel \u003e 0)) return fail(\u0027Miles and fuel must be greater than zero.\u0027);\n\nreturn [{ json: {\n  ok: true,\n  driver: f[\u0027Driver\u0027], truck: f[\u0027Truck\u0027], po: f[\u0027PO number\u0027],\n  date: f[\u0027Date\u0027], dep: pad(dep), arr: pad(arr),\n  gross, tare, miles, fuel,\n  notes: f[\u0027Notes\u0027] || null\n} }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       260,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "n3",
+                      "name":  "Is valid?",
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "typeValidation":  "strict",
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  true
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "operator":  {
+                                                                                                    "operation":  "true",
+                                                                                                    "singleValue":  true,
+                                                                                                    "type":  "boolean"
+                                                                                                },
+                                                                                   "rightValue":  "",
+                                                                                   "id":  "c1",
+                                                                                   "leftValue":  "={{ $json.ok }}"
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "position":  [
+                                       520,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "n4",
+                      "name":  "Save ticket",
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "opspg",
+                                                           "name":  "Ops database"
+                                                       }
+                                      },
+                      "parameters":  {
+                                         "query":  "WITH n AS (SELECT nextval(pg_get_serial_sequence(\u0027load_tickets\u0027,\u0027ticket_id\u0027)) AS id)\nINSERT INTO load_tickets (ticket_id, ticket_no, driver_id, truck_id, po_id, gross_lb, tare_lb, departed_at, arrived_at, miles, fuel_gal, notes)\nSELECT n.id, \u0027LT-\u0027 || lpad(n.id::text, 5, \u00270\u0027), d.driver_id, tr.truck_id, po.po_id,\n       $4::int, $5::int,\n       (($6::date + $7::time) AT TIME ZONE \u0027America/New_York\u0027),\n       (($6::date + $8::time) AT TIME ZONE \u0027America/New_York\u0027),\n       $9::numeric, $10::numeric, $11\nFROM n, drivers d, trucks tr, purchase_orders po\nWHERE d.name = $1 AND tr.unit_code = $2 AND po.po_number = $3\nRETURNING ticket_no;",
+                                         "operation":  "executeQuery",
+                                         "options":  {
+                                                         "queryReplacement":  "={{ [$json.driver, $json.truck, $json.po, $json.gross, $json.tare, $json.date, $json.dep, $json.arr, $json.miles, $json.fuel, $json.notes] }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgres",
+                      "position":  [
+                                       780,
+                                       -120
+                                   ],
+                      "typeVersion":  2.5
+                  },
+                  {
+                      "id":  "n5",
+                      "name":  "Get metrics",
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "opspg",
+                                                           "name":  "Ops database"
+                                                       }
+                                      },
+                      "parameters":  {
+                                         "query":  "SELECT ticket_no, driver, net_tons, trip_hours, mpg, driver_pay, revenue FROM v_load_metrics WHERE ticket_no = $1;",
+                                         "operation":  "executeQuery",
+                                         "options":  {
+                                                         "queryReplacement":  "={{ [$json.ticket_no] }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgres",
+                      "position":  [
+                                       1040,
+                                       -120
+                                   ],
+                      "typeVersion":  2.5
+                  },
+                  {
+                      "id":  "n6",
+                      "name":  "Done",
+                      "parameters":  {
+                                         "operation":  "completion",
+                                         "completionMessage":  "={{ \"Ticket \" + $json.ticket_no + \" for \" + $json.driver + \": \" + $json.net_tons + \" tons, \" + $json.trip_hours + \" h on the road, \" + $json.mpg + \" mpg. Driver pay: $\" + $json.driver_pay + \".\" }}",
+                                         "options":  {
+
+                                                     },
+                                         "completionTitle":  "Ticket saved"
+                                     },
+                      "type":  "n8n-nodes-base.form",
+                      "position":  [
+                                       1300,
+                                       -120
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "n7",
+                      "name":  "Show error",
+                      "parameters":  {
+                                         "operation":  "completion",
+                                         "completionMessage":  "={{ $json.error }}",
+                                         "options":  {
+
+                                                     },
+                                         "completionTitle":  "Please check the form"
+                                     },
+                      "type":  "n8n-nodes-base.form",
+                      "position":  [
+                                       780,
+                                       120
+                                   ],
+                      "typeVersion":  1
+                  }
+              ]
+}]
