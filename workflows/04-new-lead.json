@@ -1,0 +1,162 @@
+[{
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "timezone":  "America/New_York"
+                 },
+    "name":  "04 New lead",
+    "connections":  {
+                        "Save lead":  {
+                                          "main":  [
+                                                       [
+                                                           {
+                                                               "node":  "Lead saved",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ]
+                                                   ]
+                                      },
+                        "New lead form":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Save lead",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          }
+                    },
+    "nodes":  [
+                  {
+                      "id":  "l1",
+                      "name":  "New lead form",
+                      "parameters":  {
+                                         "formFields":  {
+                                                            "values":  [
+                                                                           {
+                                                                               "fieldType":  "text",
+                                                                               "fieldLabel":  "Company",
+                                                                               "requiredField":  true
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "text",
+                                                                               "fieldLabel":  "Contact name",
+                                                                               "requiredField":  false
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "dropdown",
+                                                                               "fieldLabel":  "Region",
+                                                                               "requiredField":  true,
+                                                                               "fieldOptions":  {
+                                                                                                    "values":  [
+                                                                                                                   {
+                                                                                                                       "option":  "Pacific Northwest"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Florida"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Caribbean"
+                                                                                                                   }
+                                                                                                               ]
+                                                                                                }
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "dropdown",
+                                                                               "fieldLabel":  "Source",
+                                                                               "requiredField":  true,
+                                                                               "fieldOptions":  {
+                                                                                                    "values":  [
+                                                                                                                   {
+                                                                                                                       "option":  "Referral"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Web search"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Trade show"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Cold call"
+                                                                                                                   }
+                                                                                                               ]
+                                                                                                }
+                                                                           },
+                                                                           {
+                                                                               "fieldType":  "dropdown",
+                                                                               "fieldLabel":  "Language",
+                                                                               "requiredField":  true,
+                                                                               "fieldOptions":  {
+                                                                                                    "values":  [
+                                                                                                                   {
+                                                                                                                       "option":  "English"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "Spanish"
+                                                                                                                   }
+                                                                                                               ]
+                                                                                                }
+                                                                           }
+                                                                       ]
+                                                        },
+                                         "formDescription":  "Add a business that could become a customer. The first follow-up is set for tomorrow.",
+                                         "path":  "new-lead",
+                                         "responseMode":  "lastNode",
+                                         "formTitle":  "New lead",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "webhookId":  "new-lead-form",
+                      "type":  "n8n-nodes-base.formTrigger",
+                      "position":  [
+                                       0,
+                                       0
+                                   ],
+                      "typeVersion":  2.3
+                  },
+                  {
+                      "id":  "l2",
+                      "name":  "Save lead",
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "opspg",
+                                                           "name":  "Ops database"
+                                                       }
+                                      },
+                      "parameters":  {
+                                         "query":  "INSERT INTO leads (company, contact, region, source, stage, next_action, next_action_date, language) VALUES ($1, NULLIF($2, \u0027\u0027), $3, $4, \u0027new\u0027, \u0027First call\u0027, current_date + 1, $5) RETURNING lead_id, company, next_action_date;",
+                                         "operation":  "executeQuery",
+                                         "options":  {
+                                                         "queryReplacement":  "={{ [$json[\"Company\"], $json[\"Contact name\"], $json[\"Region\"], $json[\"Source\"], $json[\"Language\"]] }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgres",
+                      "position":  [
+                                       300,
+                                       0
+                                   ],
+                      "typeVersion":  2.5
+                  },
+                  {
+                      "id":  "l3",
+                      "name":  "Lead saved",
+                      "parameters":  {
+                                         "operation":  "completion",
+                                         "completionMessage":  "={{ $json.company + \" is in the pipeline as a new lead. First call: \" + String($json.next_action_date).slice(0, 10) + \".\" }}",
+                                         "options":  {
+
+                                                     },
+                                         "completionTitle":  "Lead saved"
+                                     },
+                      "type":  "n8n-nodes-base.form",
+                      "position":  [
+                                       600,
+                                       0
+                                   ],
+                      "typeVersion":  1
+                  }
+              ]
+}]

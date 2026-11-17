@@ -1,0 +1,199 @@
+[{
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "timezone":  "America/New_York"
+                 },
+    "name":  "05 Daily lead follow-ups",
+    "connections":  {
+                        "Build the list":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Any due?",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Run now (demo)":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Leads due",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Leads due":  {
+                                          "main":  [
+                                                       [
+                                                           {
+                                                               "node":  "Build the list",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ]
+                                                   ]
+                                      },
+                        "Every weekday 8:00 AM ET":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "Leads due",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "Any due?":  {
+                                         "main":  [
+                                                      [
+                                                          {
+                                                              "node":  "Email the follow-ups",
+                                                              "type":  "main",
+                                                              "index":  0
+                                                          }
+                                                      ],
+                                                      [
+
+                                                      ]
+                                                  ]
+                                     }
+                    },
+    "nodes":  [
+                  {
+                      "id":  "f1",
+                      "name":  "Every weekday 8:00 AM ET",
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "expression":  "0 8 * * 1-5",
+                                                                           "field":  "cronExpression"
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "position":  [
+                                       0,
+                                       -100
+                                   ],
+                      "typeVersion":  1.2
+                  },
+                  {
+                      "id":  "f2",
+                      "name":  "Run now (demo)",
+                      "parameters":  {
+
+                                     },
+                      "type":  "n8n-nodes-base.manualTrigger",
+                      "position":  [
+                                       0,
+                                       100
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "alwaysOutputData":  true,
+                      "id":  "f3",
+                      "name":  "Leads due",
+                      "type":  "n8n-nodes-base.postgres",
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "opspg",
+                                                           "name":  "Ops database"
+                                                       }
+                                      },
+                      "typeVersion":  2.5,
+                      "parameters":  {
+                                         "query":  "SELECT company, contact, region, stage, next_action, next_action_date, language FROM leads WHERE stage NOT IN (\u0027won\u0027, \u0027lost\u0027) AND next_action_date \u003c= current_date ORDER BY next_action_date, company;",
+                                         "operation":  "executeQuery",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "position":  [
+                                       280,
+                                       0
+                                   ]
+                  },
+                  {
+                      "id":  "f4",
+                      "name":  "Build the list",
+                      "parameters":  {
+                                         "jsCode":  "const rows = $input.all().map(i =\u003e i.json).filter(r =\u003e r.company);\nconst regionEs = { \u0027Caribbean\u0027: \u0027el Caribe\u0027, \u0027Florida\u0027: \u0027Florida\u0027, \u0027Pacific Northwest\u0027: \u0027el Noroeste del Pacífico\u0027 };\nconst draft = (r) =\u003e {\n  const first = (r.contact || \u0027\u0027).split(\u0027 \u0027)[0];\n  if (r.language === \u0027Spanish\u0027) {\n    return `Hola ${first || \u0027\u0027}, le escribo para dar seguimiento a nuestra conversación sobre la recolección de material reciclable en ${regionEs[r.region] || r.region}. ¿Tiene 10 minutos esta semana para una llamada?`;\n  }\n  return `Hi ${first || \u0027there\u0027}, I\u0027m following up on our conversation about recycling pickups in ${r.region}. Do you have 10 minutes this week for a call?`;\n};\nconst day = (d) =\u003e String(d).slice(0, 10);\nconst items = rows.map(r =\u003e `\u003ctr\u003e\u003ctd\u003e${r.company}\u003c/td\u003e\u003ctd\u003e${r.contact || \u0027\u0027}\u003c/td\u003e\u003ctd\u003e${r.stage}\u003c/td\u003e\u003ctd\u003e${r.next_action || \u0027\u0027}\u003c/td\u003e\u003ctd\u003e${day(r.next_action_date)}\u003c/td\u003e\u003ctd\u003e${r.language}\u003c/td\u003e\u003ctd\u003e\u003ci\u003e${draft(r)}\u003c/i\u003e\u003c/td\u003e\u003c/tr\u003e`).join(\u0027\u0027);\nconst html = `\u003cp\u003eThese leads need a follow-up today or are overdue.\u003c/p\u003e\n\u003ctable border=\"1\" cellpadding=\"6\" cellspacing=\"0\"\u003e\n\u003ctr\u003e\u003cth\u003eCompany\u003c/th\u003e\u003cth\u003eContact\u003c/th\u003e\u003cth\u003eStage\u003c/th\u003e\u003cth\u003eNext action\u003c/th\u003e\u003cth\u003eDue\u003c/th\u003e\u003cth\u003eLanguage\u003c/th\u003e\u003cth\u003eSuggested message\u003c/th\u003e\u003c/tr\u003e${items}\u003c/table\u003e`;\nreturn [{ json: { count: rows.length, subject: `${rows.length} lead follow-up(s) due today`, html } }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       560,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "f5",
+                      "name":  "Any due?",
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "typeValidation":  "strict",
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  true
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "operator":  {
+                                                                                                    "operation":  "gt",
+                                                                                                    "type":  "number"
+                                                                                                },
+                                                                                   "rightValue":  0,
+                                                                                   "id":  "c1",
+                                                                                   "leftValue":  "={{ $json.count }}"
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "position":  [
+                                       820,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "f6",
+                      "name":  "Email the follow-ups",
+                      "credentials":  {
+                                          "smtp":  {
+                                                       "id":  "opssmtp",
+                                                       "name":  "Mailpit"
+                                                   }
+                                      },
+                      "parameters":  {
+                                         "html":  "={{ $json.html }}",
+                                         "fromEmail":  "automation@recycling-lab.example",
+                                         "subject":  "={{ $json.subject }}",
+                                         "emailFormat":  "html",
+                                         "options":  {
+
+                                                     },
+                                         "toEmail":  "operations@recycling-lab.example"
+                                     },
+                      "type":  "n8n-nodes-base.emailSend",
+                      "position":  [
+                                       1080,
+                                       -60
+                                   ],
+                      "typeVersion":  2.1
+                  }
+              ]
+}]

@@ -44,6 +44,7 @@ CREATE TABLE load_tickets (
     miles           NUMERIC(6,1) NOT NULL,
     fuel_gal        NUMERIC(6,1) NOT NULL,
     notes           TEXT,
+    invoiced        BOOLEAN NOT NULL DEFAULT FALSE,   -- already billed to the customer?
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     CHECK (arrived_at > departed_at),
     CHECK (gross_lb > tare_lb)
@@ -68,8 +69,12 @@ CREATE TABLE leads (
     stage           TEXT NOT NULL DEFAULT 'new',       -- new, contacted, quoted, won, lost
     next_action     TEXT,
     next_action_date DATE,
+    language        TEXT NOT NULL DEFAULT 'English',   -- language to write to the lead in
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Invoice numbers continue after the ten that come with the sample data.
+CREATE SEQUENCE invoice_no_seq START 1011;
 
 -- One row per load with everything calculated.
 -- Driver pay rule (fictional): hourly rate x trip hours + the per-load bonus.
@@ -131,3 +136,14 @@ FROM invoices i
 JOIN purchase_orders po ON po.po_id = i.po_id
 JOIN customers c        ON c.customer_id = po.customer_id
 WHERE i.status = 'pending';
+
+-- Loads delivered but not billed yet, grouped by purchase order.
+CREATE VIEW v_ready_to_invoice AS
+SELECT po.po_number, c.name AS customer, COUNT(*) AS loads,
+       ROUND(SUM((t.gross_lb - t.tare_lb) / 2000.0), 2) AS tons,
+       ROUND(SUM((t.gross_lb - t.tare_lb) / 2000.0 * po.price_per_ton), 2) AS amount
+FROM load_tickets t
+JOIN purchase_orders po ON po.po_id = t.po_id
+JOIN customers c        ON c.customer_id = po.customer_id
+WHERE t.invoiced = FALSE
+GROUP BY po.po_number, c.name;

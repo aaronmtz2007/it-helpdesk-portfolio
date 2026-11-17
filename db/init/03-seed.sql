@@ -43,11 +43,13 @@ SELECT
 FROM generate_series(1, 10) AS i;
 
 INSERT INTO leads (company, contact, region, source, stage, next_action, next_action_date) VALUES
- ('Caribe Scrap Partners',    'Elena Cruz',    'Caribbean', 'Referral',   'contacted', 'Send price list in Spanish',      current_date + 2),
- ('Santo Domingo Metales',    'Rafael Peña',   'Caribbean', 'Web search', 'new',       'First call',                      current_date + 1),
+ ('Caribe Scrap Partners',    'Elena Cruz',    'Caribbean', 'Referral',   'contacted', 'Send price list in Spanish',      current_date),
+ ('Santo Domingo Metales',    'Rafael Peña',   'Caribbean', 'Web search', 'new',       'First call',                      current_date),
  ('Isla Verde Recycling',     'Carmen Rivera', 'Caribbean', 'Trade show', 'quoted',    'Follow up on the quote',          current_date + 4),
  ('Tacoma Demolition',        'Jim Walker',    'Pacific Northwest', 'Cold call', 'new',       'Send intro email',            current_date + 1),
  ('Orlando Builders Supply',  'Sandra Lopez',  'Florida',   'Referral',   'contacted', 'Schedule a site visit',           current_date + 3),
  ('Tampa Bay Salvage',        'Mike Duran',    'Florida',   'Web search', 'lost',      NULL,                              NULL),
  ('Portland Roofing Co.',     'Anna Fischer',  'Pacific Northwest', 'Referral', 'won',        'Set up first delivery',       current_date + 5),
  ('Miami Port Logistics',     'Diego Marin',   'Florida',   'Trade show', 'quoted',    'Confirm weekly volume',           current_date + 2);
+
+UPDATE leads SET language = 'Spanish' WHERE region = 'Caribbean';

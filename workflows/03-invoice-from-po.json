@@ -1,0 +1,255 @@
+[{
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "timezone":  "America/New_York"
+                 },
+    "name":  "03 Invoice from a purchase order",
+    "connections":  {
+                        "Invoice form":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Create invoice",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         },
+                        "Email the invoice":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Invoice done",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Create invoice":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Was an invoice created?",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Was an invoice created?":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Build the invoice",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ],
+                                                                     [
+                                                                         {
+                                                                             "node":  "Nothing to invoice",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Build the invoice":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Email the invoice",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              }
+                    },
+    "nodes":  [
+                  {
+                      "id":  "i1",
+                      "name":  "Invoice form",
+                      "parameters":  {
+                                         "responseMode":  "lastNode",
+                                         "formDescription":  "Pick a purchase order. All its delivered loads that are not billed yet go into one invoice.",
+                                         "path":  "create-invoice",
+                                         "formFields":  {
+                                                            "values":  [
+                                                                           {
+                                                                               "fieldType":  "dropdown",
+                                                                               "fieldLabel":  "PO number",
+                                                                               "requiredField":  true,
+                                                                               "fieldOptions":  {
+                                                                                                    "values":  [
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0101"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0102"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0103"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0104"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "option":  "PO-24-0105"
+                                                                                                                   }
+                                                                                                               ]
+                                                                                                }
+                                                                           }
+                                                                       ]
+                                                        },
+                                         "formTitle":  "Create an invoice",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "webhookId":  "create-invoice-form",
+                      "type":  "n8n-nodes-base.formTrigger",
+                      "position":  [
+                                       0,
+                                       0
+                                   ],
+                      "typeVersion":  2.3
+                  },
+                  {
+                      "alwaysOutputData":  true,
+                      "id":  "i2",
+                      "name":  "Create invoice",
+                      "type":  "n8n-nodes-base.postgres",
+                      "credentials":  {
+                                          "postgres":  {
+                                                           "id":  "opspg",
+                                                           "name":  "Ops database"
+                                                       }
+                                      },
+                      "typeVersion":  2.5,
+                      "parameters":  {
+                                         "query":  "WITH billed AS (\n  UPDATE load_tickets SET invoiced = TRUE\n  WHERE invoiced = FALSE\n    AND po_id = (SELECT po_id FROM purchase_orders WHERE po_number = $1::text)\n  RETURNING gross_lb, tare_lb\n), tot AS (\n  SELECT COUNT(*) AS loads, COALESCE(SUM((gross_lb - tare_lb) / 2000.0), 0) AS tons FROM billed\n), inv AS (\n  INSERT INTO invoices (invoice_no, po_id, issue_date, amount, status)\n  SELECT \u0027INV-\u0027 || nextval(\u0027invoice_no_seq\u0027), po.po_id, current_date, ROUND(tot.tons * po.price_per_ton, 2), \u0027pending\u0027\n  FROM tot, purchase_orders po\n  WHERE po.po_number = $1::text AND tot.loads \u003e 0\n  RETURNING invoice_no, amount, po_id\n)\nSELECT inv.invoice_no, inv.amount, tot.loads, ROUND(tot.tons, 2) AS tons,\n       po.po_number, po.material, po.price_per_ton, c.name AS customer\nFROM inv, tot, purchase_orders po, customers c\nWHERE po.po_id = inv.po_id AND c.customer_id = po.customer_id;",
+                                         "operation":  "executeQuery",
+                                         "options":  {
+                                                         "queryReplacement":  "={{ [$json[\"PO number\"]] }}"
+                                                     }
+                                     },
+                      "position":  [
+                                       280,
+                                       0
+                                   ]
+                  },
+                  {
+                      "id":  "i3",
+                      "name":  "Was an invoice created?",
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "typeValidation":  "loose",
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  true
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "operator":  {
+                                                                                                    "operation":  "notEmpty",
+                                                                                                    "singleValue":  true,
+                                                                                                    "type":  "string"
+                                                                                                },
+                                                                                   "rightValue":  "",
+                                                                                   "id":  "c1",
+                                                                                   "leftValue":  "={{ $json.invoice_no }}"
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "position":  [
+                                       560,
+                                       0
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "i4",
+                      "name":  "Build the invoice",
+                      "parameters":  {
+                                         "jsCode":  "const r = $input.first().json;\nconst money = (n) =\u003e \u0027$\u0027 + Number(n).toLocaleString(\u0027en-US\u0027, { minimumFractionDigits: 2, maximumFractionDigits: 2 });\nconst due = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);\nconst html = `\u003ch2\u003eInvoice ${r.invoice_no}\u003c/h2\u003e\n\u003cp\u003e\u003cb\u003eCustomer:\u003c/b\u003e ${r.customer}\u003cbr\u003e\u003cb\u003ePurchase order:\u003c/b\u003e ${r.po_number}\u003cbr\u003e\u003cb\u003eDue:\u003c/b\u003e ${due} (net 30)\u003c/p\u003e\n\u003ctable border=\"1\" cellpadding=\"6\" cellspacing=\"0\"\u003e\n\u003ctr\u003e\u003cth\u003eDescription\u003c/th\u003e\u003cth\u003eLoads\u003c/th\u003e\u003cth\u003eTons\u003c/th\u003e\u003cth\u003ePrice per ton\u003c/th\u003e\u003cth\u003eAmount\u003c/th\u003e\u003c/tr\u003e\n\u003ctr\u003e\u003ctd\u003e${r.material}\u003c/td\u003e\u003ctd\u003e${r.loads}\u003c/td\u003e\u003ctd\u003e${r.tons}\u003c/td\u003e\u003ctd\u003e${money(r.price_per_ton)}\u003c/td\u003e\u003ctd style=\"text-align:right\"\u003e${money(r.amount)}\u003c/td\u003e\u003c/tr\u003e\n\u003ctr\u003e\u003ctd colspan=\"4\"\u003e\u003cb\u003eTotal\u003c/b\u003e\u003c/td\u003e\u003ctd style=\"text-align:right\"\u003e\u003cb\u003e${money(r.amount)}\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\n\u003c/table\u003e`;\nreturn [{ json: { ...r,\n  subject: `Invoice ${r.invoice_no} for purchase order ${r.po_number}`,\n  html,\n  summary: `Invoice ${r.invoice_no} created for ${r.customer}: ${r.loads} loads, ${r.tons} tons, ${money(r.amount)}. The invoice was emailed and is now in the factoring queue.`\n} }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       820,
+                                       -120
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "i5",
+                      "name":  "Email the invoice",
+                      "credentials":  {
+                                          "smtp":  {
+                                                       "id":  "opssmtp",
+                                                       "name":  "Mailpit"
+                                                   }
+                                      },
+                      "parameters":  {
+                                         "html":  "={{ $json.html }}",
+                                         "fromEmail":  "billing@recycling-lab.example",
+                                         "subject":  "={{ $json.subject }}",
+                                         "emailFormat":  "html",
+                                         "options":  {
+
+                                                     },
+                                         "toEmail":  "accounts-payable@customer.example"
+                                     },
+                      "type":  "n8n-nodes-base.emailSend",
+                      "position":  [
+                                       1080,
+                                       -120
+                                   ],
+                      "typeVersion":  2.1
+                  },
+                  {
+                      "id":  "i6",
+                      "name":  "Invoice done",
+                      "parameters":  {
+                                         "operation":  "completion",
+                                         "completionMessage":  "={{ $(\"Build the invoice\").first().json.summary }}",
+                                         "options":  {
+
+                                                     },
+                                         "completionTitle":  "Invoice created"
+                                     },
+                      "type":  "n8n-nodes-base.form",
+                      "position":  [
+                                       1340,
+                                       -120
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "i7",
+                      "name":  "Nothing to invoice",
+                      "parameters":  {
+                                         "operation":  "completion",
+                                         "completionMessage":  "This purchase order has no delivered loads waiting to be billed.",
+                                         "options":  {
+
+                                                     },
+                                         "completionTitle":  "Nothing to invoice"
+                                     },
+                      "type":  "n8n-nodes-base.form",
+                      "position":  [
+                                       820,
+                                       120
+                                   ],
+                      "typeVersion":  1
+                  }
+              ]
+}]
