@@ -72,4 +72,4 @@ I used an AI assistant to save time on some tasks, mainly to check commands and 
 
 ## Relation with project 1
 
-Tickets 1, 6 and 7 are solved in the [Active Directory lab](../01-active-directory-lab/): an account unlock, a new user and a group permission.
+Tickets 1, 6 and 7 are solved in the [Active Directory lab](../active-directory-lab/): an account unlock, a new user and a group permission.

@@ -72,4 +72,4 @@ Usé un asistente de IA para ahorrar tiempo en algunas tareas, sobre todo para c
 
 ## Relación con el Proyecto 1
 
-Los tickets 1, 6 y 7 se resuelven en el [laboratorio de Active Directory](../01-active-directory-lab/): un desbloqueo de cuenta, un usuario nuevo y un permiso de grupo.
+Los tickets 1, 6 y 7 se resuelven en el [laboratorio de Active Directory](../active-directory-lab/): un desbloqueo de cuenta, un usuario nuevo y un permiso de grupo.

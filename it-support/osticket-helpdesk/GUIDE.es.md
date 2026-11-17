@@ -15,7 +15,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 Luego copié `.env.example` a `.env` y puse mis propios valores (solo letras y números, para que el idioma del teclado no cause problemas), y levanté todo:
 
 ```powershell
-cd 02-osticket-helpdesk
+cd it-support/osticket-helpdesk
 copy .env.example .env
 docker compose up -d
 docker compose ps
