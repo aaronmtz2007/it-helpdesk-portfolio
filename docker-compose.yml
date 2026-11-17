@@ -1,3 +1,5 @@
+name: recycling-ops-automation
+
 # Operations automation lab for a fictional recycling company.
 # n8n runs the workflows, PostgreSQL stores the data, Metabase shows the dashboards.
 # Usage:  copy .env.example .env  (set your own values)  ->  docker compose up -d
